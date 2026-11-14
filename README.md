@@ -2,15 +2,16 @@
 
 Joshua Antonio-Rodriguez:EN.601.257
 
-A small shooter built in Unity following **Hands-On Unity Game Development (4th Edition)**, Chapters 2–13.
+A small shooter built in Unity following **Hands-On Unity Game Development (4th Edition)**, Chapters 2–15 and 17.
 
 ## Controls
 - **WASD** – move
 - **Mouse** – turn
-- **Left click** – shoot
+- **Left click** – shoot (hold to fire continuously)
+- **Esc** – pause
 
 ## How to play
-Open `Assets/Scenes/test` and press Play. Enemies spawn in waves and head for your base (the BaseDamagePoint in the middle of the ProBuilder base). Shoot them before they destroy you or the base. The game is played in first person on a rainy night.
+Open `Assets/Scenes/test` and press Play. A short camera flyover of the base plays first, then the camera follows the player from behind. Enemies spawn in waves and head for your base (the BaseDamagePoint in the middle of the ProBuilder base). Shoot them before they destroy you or the base. The game takes place on a rainy night.
 - **Win:** kill every enemy after all waves finish → `WinScreen`
 - **Lose:** player or base Life reaches 0 → `LoseScreen`
 
@@ -100,10 +101,51 @@ Open `Assets/Scenes/test` and press Play. Enemies spawn in waves and head for yo
 - Basic effects: Chromatic Aberration (0.25), Vignette (0.3 / smoothness 0.5), Motion Blur (0.25), Film Grain (1), White Balance (temperature −20)
 - Advanced effects: Bloom (threshold 0.7, intensity 0.2), Depth of Field (Gaussian, start 10, end 20, max radius 1.5), Shadows Midtones Highlights (subtle adjustments)
 
+**Chapter 14 – Audio**
+- Imported music, a rain ambience loop, a gunshot, and an explosion sound into `Assets/Audio`
+- Import settings: music and rain use Streaming (stereo); sound effects use Force To Mono, Decompress On Load, and Vorbis
+- `music` and `Rain Ambience` objects with looping 2D AudioSources
+- `Main Mixer` Audio Mixer with SFX and Music groups, a Lowpass Simple effect on Master, and three snapshots: default, `Pause` (lower SFX), and `Bomb Stun` (cutoff 1000 Hz)
+- Explosion prefab plays its sound on spawn (Play On Awake, 3D)
+- `PlayerShooting` and `EnemyFSM` – new `shootSound` field, played with the muzzle flash
+
+**Chapter 15 – User Interface**
+- Canvas with Canvas Scaler (Scale With Screen Size, 1920×1080, match height) and an EventSystem using the Input System UI module
+- Imported the PixelUISciFiFree pack; 9-sliced the panel and button sprites; used its TextMesh Pro font
+- HUD: player avatar, player health bar and base health bar (Filled images), and Score, Bullets, Waves, and Enemies labels, anchored to the screen corners
+- Pause menu: sliced panel with a title and Resume/Quit buttons, hidden by default
+- Scripts:
+  - `LifeBar` – fills a bar from a target `Life` (player and base)
+  - `PlayerBulletsUI`, `ScoreUI`, `EnemiesUI`, `WavesUI` – update the labels (Enemies/Waves use the managers' `onChanged` events)
+  - `PlayerShooting` – limited `bulletsAmount`
+  - `Pause` – Esc sets `Time.timeScale` to 0, shows the menu and cursor; Resume restores them
+  - `QuitButton` – calls `Application.Quit()`
+  - Player and enemies can't shoot while paused
+
+**Chapter 17 – Animation, Cinemachine, and Timeline**
+- `Player` Animator Controller (`Assets/Animations`) with `Velocity` (float) and `Shooting` (bool) parameters:
+  - `LowerBody` layer: Idle ↔ Run
+  - `UpperBody` layer: Idle, Run, and Idle_Shoot, using `UpperBodyMask` (legs masked out) with Override blending
+- Controller applied to the robot on both the Player and the Enemy prefab, with Root Motion off
+- Fire input set to Press And Release
+- Scripts:
+  - `PlayerShooting` – hold-to-fire with `fireRate` (`InvokeRepeating`) and sets the `Shooting` parameter
+  - `VelocityAnimator` – sends the player's Rigidbody speed to the animator
+  - `NavMeshAnimator` – sends the enemy's NavMeshAgent speed to the animator
+  - `EnemyFSM` – turns `Shooting` on when firing and off while moving
+- Cinemachine: `CM vcam1` follows the player from behind (Transposer offset (0, 3, -3), Composer aim)
+- Dolly track intro: `Dolly Track` path over the base, `Dolly Cart`, and `CM vcam2` riding the cart and looking at the base
+- Timeline `Intro` on the `Director` object: an Animation track plays `IntroDollyTrack` (cart from start to end in 5 seconds) and a Cinemachine track blends from `CM vcam2` to `CM vcam1`; Wrap Mode Hold
+- Wave spawner start time delayed so enemies arrive after the intro
+
 ## Project structure
 ```
 Assets/
   Scripts/           all C# scripts
+  Audio/             music, rain, gunshot, explosion + Main Mixer
+  Animations/        Player controller, UpperBodyMask, IntroDollyTrack
+  Cutscene/          Intro timeline
+  Sprites/           avatar image
   Scenes/            test, WinScreen, LoseScreen
   Prefab/            Enemy, Enemy variants, PlayerBullet, Enemy Bullet, Wall,
                      Explosion, Waterfall, Bonfire, MuzzleFlash01
@@ -113,12 +155,13 @@ Assets/
   Settings/          URP assets, Lighting Settings, PP Volume Profile
   Terrain/           GameTerrain + terrain layers
   PhysicsMaterials/
-  Imported packs:    Sci-Fi Styled Modular Pack, SciFiWarriorPBRHPPolyart, ObjectiveEnvironment_Assets, AllSkyFree
+  Imported packs:    Sci-Fi Styled Modular Pack, SciFiWarriorPBRHPPolyart, ObjectiveEnvironment_Assets, AllSkyFree, PixelUISciFiFree
 ```
 
 ## Notes
 - The Player is based on the Enemy prefab, so enemy-only components (AI child, NavMeshAgent) are disabled on it.
 - The Player Rigidbody has gravity off and Y position frozen (Chapter 7), so the player can move over the pit.
 - Oversized demo files from the terrain texture pack were removed to stay under GitHub's 100 MB limit.
-- The Main Camera is a child of the Player at eye level for a first-person view. The Player was moved out of the `Enemies` object, and its Rigidbody freezes X/Z rotation so the view doesn't tilt.
-- The robot's `AssaultRifle` is a skinned mesh driven by the character's bones, so it was left in place until animations are added (Chapter 17). `ShootPoint` sits just in front of the camera instead.
+- The Player was moved out of the `Enemies` object, and its Rigidbody freezes X/Z rotation so it doesn't tilt.
+- Before Chapter 17 the game used a first-person camera; Chapter 17 replaced it with the Cinemachine follow camera.
+- The Player inherits `NavMeshAnimator` from the Enemy prefab; it does nothing there because the Player's NavMeshAgent is disabled.
