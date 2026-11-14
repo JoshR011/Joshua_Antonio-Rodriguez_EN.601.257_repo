@@ -18,6 +18,7 @@ GameObject:
   - component: {fileID: -8245787573871793428}
   - component: {fileID: 1760097245544703247}
   - component: {fileID: 2784840471961478662}
+  - component: {fileID: 3768607963578086460}
   m_Layer: 7
   m_Name: Enemy
   m_TagString: Untagged
@@ -222,6 +223,18 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   particlePrefab: {fileID: 8384668201468270891, guid: 8b25df78bb4e647a7a23e34d13264b7a,
     type: 3}
+--- !u!114 &3768607963578086460
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1991628998923419243}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3334fb3d17d9e4360ab03e73a87ae67d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &2258382043511080667
 GameObject:
   m_ObjectHideFlags: 0
@@ -451,6 +464,11 @@ PrefabInstance:
       propertyPath: m_Enabled
       value: 1
       objectReference: {fileID: 0}
+    - target: {fileID: 7072444061582351952, guid: 910177ec26b76c14996c2d53627a6def,
+        type: 3}
+      propertyPath: m_Controller
+      value: 
+      objectReference: {fileID: 9100000, guid: 390ff7c6b0e9c44dd8876ff3e11cc42a, type: 2}
     - target: {fileID: 7072444061591351794, guid: 910177ec26b76c14996c2d53627a6def,
         type: 3}
       propertyPath: m_LocalPosition.x
