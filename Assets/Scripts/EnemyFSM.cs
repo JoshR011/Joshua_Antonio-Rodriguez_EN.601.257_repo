@@ -17,12 +17,14 @@ public class EnemyFSM : MonoBehaviour
     public AudioSource shootSound;
     private Transform baseTransform;
     private NavMeshAgent agent;
+    private Animator animator;
 
 
     private void Awake()
     {
         baseTransform = GameObject.Find("BaseDamagePoint").transform;
         agent = GetComponentInParent<NavMeshAgent>();
+        animator = transform.parent.GetComponentInChildren<Animator>();
     }
 
     void Update()
@@ -35,6 +37,7 @@ public class EnemyFSM : MonoBehaviour
 
     void GoToBase()
     {
+        animator.SetBool("Shooting", false);
         agent.isStopped = false;
         agent.SetDestination(baseTransform.position);
 
@@ -61,6 +64,7 @@ public class EnemyFSM : MonoBehaviour
 
     void ChasePlayer()
     {
+        animator.SetBool("Shooting", false);
         agent.isStopped = false;
 
         if (sightSensor.detectedObject == null)
@@ -104,8 +108,9 @@ public class EnemyFSM : MonoBehaviour
 
     void Shoot()
     {
+        animator.SetBool("Shooting", true);
         var timeSinceLastShoot = Time.time - lastShootTime;
-        if (timeSinceLastShoot > fireRate)
+        if (timeSinceLastShoot > fireRate && Time.timeScale > 0)
         {
             lastShootTime = Time.time;
             Instantiate(bulletPrefab,transform.position, transform.rotation);
